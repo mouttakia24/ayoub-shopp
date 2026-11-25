@@ -45,9 +45,11 @@ export default defineConfig(async ({ command }) => {
 
   return {
     server: {
-      ...(managedLinux
-        ? { host: "0.0.0.0", allowedHosts: ["terminal.local"] }
-        : {}),
+      ...(managedLinux ? { host: "0.0.0.0" } : {}),
+      allowedHosts: [
+        "terminal.local",
+        "workspace-preview-error-ayoub-shop-8ea2a347a1695f1a.v0.build",
+      ],
       ...(isCodexSeatbeltSandbox
         ? { watch: { useFsEvents: false, usePolling: true } }
         : {}),

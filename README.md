@@ -4,6 +4,24 @@ A working multilingual watch store for Morocco. The application includes a respo
 
 For Netlify, use the native Next.js build and PostgreSQL/Blobs backend described in [NETLIFY.md](NETLIFY.md). The configuration in `netlify.toml` selects this build automatically; the commands below retain the Sites/Cloudflare development workflow.
 
+## Restore source and local D1 state
+
+The repository packages its application source and original Wrangler D1 state in `ayoub-main.zip`. For a clean clone, extract the source without replacing tracked or existing files, restore the packaged database only when no local D1 state exists, then install dependencies:
+
+```sh
+SOURCE_DIR="$(mktemp -d)"
+unzip -oq ayoub-main.zip -d "$SOURCE_DIR" -x '*/.env'
+rsync -a --ignore-existing \
+  --exclude='.env' --exclude='.env.*' --exclude='.git/' --exclude='node_modules/' \
+  --exclude='/package.json' --exclude='/package-lock.json' \
+  --exclude='.wrangler/state/v3/d1/' \
+  "$SOURCE_DIR/ayoub-main/" ./
+node scripts/restore-local-d1.mjs "$SOURCE_DIR/ayoub-main"
+npm run install:ci
+```
+
+`restore-local-d1.mjs` checks the packaged schema, SQLite integrity, and non-empty `content_overrides` data before copying the complete D1 state. If local D1 state already exists, it validates the required schema and preserves every existing database file; incomplete or empty state is reported rather than replaced. The archived D1 snapshot contains the existing `content_overrides` row and the full storefront schema.
+
 ## Run locally
 
 Requires Node.js 24 (the test suite uses built-in TypeScript stripping and SQLite), npm, and a local port.
@@ -12,6 +30,8 @@ Requires Node.js 24 (the test suite uses built-in TypeScript stripping and SQLit
 npm run install:ci
 npm run build
 ```
+
+The archive already includes the initialized local D1 database and its existing records. The migration commands below are schema-only and are for an intentionally blank database; they do not restore archived data. Migration `0003_daily_sauron.sql` defines `content_overrides`. Do not apply these migrations over the packaged snapshot.
 
 Apply each migration **once**, in filename order, to a fresh local database (existing databases need only pending migrations):
 
