@@ -10,7 +10,7 @@ The repository packages its application source and original Wrangler D1 state in
 
 ```sh
 SOURCE_DIR="$(mktemp -d)"
-unzip -oq ayoub-main.zip -d "$SOURCE_DIR" -x '*/.env' '*/.env.*'
+unzip -oq ayoub-main.zip -d "$SOURCE_DIR" -x '*/.env'
 rsync -a --ignore-existing \
   --exclude='.env' --exclude='.env.*' --exclude='.git/' --exclude='node_modules/' \
   --exclude='/package.json' --exclude='/package-lock.json' \
